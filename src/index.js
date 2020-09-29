@@ -7,7 +7,7 @@ import theme from "./theme";
 import * as serviceWorker from "./serviceWorker";
 
 ReactDOM.render(
-  <React.StrictMode>
+  <React.Fragment>
     <Auth0Provider
       domain={process.env.REACT_APP_DOMAIN}
       clientId={process.env.REACT_APP_CLIENT_ID}
@@ -18,7 +18,7 @@ ReactDOM.render(
         <App />
       </ThemeProvider>
     </Auth0Provider>
-  </React.StrictMode>,
+  </React.Fragment>,
   document.getElementById("root")
 );
 

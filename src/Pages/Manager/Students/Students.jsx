@@ -1,5 +1,5 @@
 import { useAuth0 } from "@auth0/auth0-react";
-import { Button, Flex, Heading, useDisclosure } from "@chakra-ui/core";
+import { Button, Flex, Heading } from "@chakra-ui/core";
 import React from "react";
 import { toast } from "react-toastify";
 import ManagerDashboardLayout from "../../../Layouts/ManagerDashboard";
@@ -11,10 +11,10 @@ import { Link } from "react-router-dom";
 const Students = () => {
   const [loading, setLoading] = React.useState(true);
   const [students, setStudents] = React.useState([]);
-  const { token } = useAuth0().user["https://fauna.com/user_metadata"];
+  const { secret } = useAuth0().user["https://fauna.com/user_metadata"];
 
   React.useEffect(() => {
-    getStudents(token)
+    getStudents(secret)
       .then((students) => {
         setLoading(false);
         setStudents(students);
@@ -23,7 +23,7 @@ const Students = () => {
         setLoading(false);
         toast.error(error.message);
       });
-  }, [token]);
+  }, [secret]);
 
   return (
     <ManagerDashboardLayout>

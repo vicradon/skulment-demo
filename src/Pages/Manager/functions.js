@@ -1,13 +1,10 @@
-import axios from "axios";
 const faunadb = require("faunadb");
 const q = faunadb.query;
 const { capitalize } = require("../../services/sharedFunctions");
 require("dotenv").config();
 
-export const getCourses = async (token) => {
-  const client = new faunadb.Client({
-    secret: token,
-  });
+export const getCourses = async (secret) => {
+  const client = new faunadb.Client({ secret });
 
   const courses = await client.query(
     q.Map(
@@ -42,10 +39,8 @@ export const getCourses = async (token) => {
   return courses.data;
 };
 
-export const getTeachers = async (token) => {
-  const client = new faunadb.Client({
-    secret: token,
-  });
+export const getTeachers = async (secret) => {
+  const client = new faunadb.Client({ secret });
   const teachers = await client.query(
     q.Map(
       q.Paginate(q.Documents(q.Collection("Teachers"))),
@@ -72,10 +67,8 @@ export const getTeachers = async (token) => {
   return teachers.data;
 };
 
-export const getStudents = async (token) => {
-  const client = new faunadb.Client({
-    secret: token,
-  });
+export const getStudents = async (secret) => {
+  const client = new faunadb.Client({ secret });
   const students = await client.query(
     q.Map(
       q.Paginate(q.Documents(q.Collection("Students"))),
@@ -115,10 +108,8 @@ export const getStudents = async (token) => {
   return students.data;
 };
 
-export const fetchCourseAdditionDependencies = async (token) => {
-  const client = new faunadb.Client({
-    secret: token,
-  });
+export const fetchCourseAdditionDependencies = async (secret) => {
+  const client = new faunadb.Client({ secret });
   const teachersAndClasses = await client.query(
     q.Let(
       {
@@ -153,55 +144,34 @@ export const fetchCourseAdditionDependencies = async (token) => {
   return teachersAndClasses;
 };
 
-export const getTeacherDetails = async (teacher_id, token) => {
-  const client = new faunadb.Client({
-    secret: token,
-  });
+export const getTeacherDetails = async (teacher_id, secret) => {
+  const client = new faunadb.Client({ secret });
   const teacher = await client.query(
-    q.Call(q.Function("get_teacher_details"), teacher_id)
+    q.Let(
+      {
+        teacher: q.Get(q.Ref(q.Collection("Teachers"), teacher_id)),
+        course_refs: q.Select(["data", "courses"], q.Var("teacher"), []),
+        courses: q.Map(
+          q.Var("course_refs"),
+          q.Lambda("ref", {
+            id: q.Select(["id"], q.Var("ref")),
+            title: q.Select(["data", "title"], q.Get(q.Var("ref"))),
+          })
+        ),
+      },
+      {
+        firstName: q.Select(["data", "firstName"], q.Var("teacher")),
+        lastName: q.Select(["data", "lastName"], q.Var("teacher")),
+        email: q.Select(["data", "email"], q.Var("teacher")),
+        courses: q.Var("courses"),
+      }
+    )
   );
   return teacher;
 };
 
-export const getCourseDetails = async (course_id, token) => {
-  const client = new faunadb.Client({
-    secret: token,
-  });
-  const course = await client.query(
-    q.Let(
-      {
-        course: q.Get(q.Ref(q.Collection("Courses"), course_id)),
-        teachers: q.Call(
-          q.Function("teacher_ids_and_names"),
-          q.Select(["data", "teachers"], q.Var("course"), [])
-        ),
-        availableFor: q.Get(
-          q.Ref(
-            q.Collection("Classes"),
-            q.Select(["data", "availableFor"], q.Var("course"))
-          )
-        ),
-      },
-      {
-        id: q.Select(["ref", "id"], q.Var("course")),
-        title: q.Select(["data", "title"], q.Var("course")),
-        code: q.Select(["data", "code"], q.Var("course")),
-        creditLoad: q.Select(["data", "creditLoad"], q.Var("course")),
-        availableFor: q.Select(["data", "name"], q.Var("availableFor")),
-        enrolment_count: q.Count(
-          q.Select(["data", "registrations"], q.Var("course"), [])
-        ),
-        teachers: q.Var("teachers"),
-      }
-    )
-  );
-  return course;
-};
-
-export const addCourse = async (data, token) => {
-  const client = new faunadb.Client({
-    secret: token,
-  });
+export const addCourse = async (data, secret) => {
+  const client = new faunadb.Client({ secret });
 
   const { teacher, availableFor, ...rest } = data;
   const course = await client.query(
@@ -217,70 +187,16 @@ export const addCourse = async (data, token) => {
   return course;
 };
 
-export const unAssginCourse = async (token, data) => {
-  const client = new faunadb.Client({
-    secret: token,
-  });
-  const course = await client.query(
-    q.Create(q.Collection("Courses"), { data })
-  );
-  return course;
-};
-
-export const assginCourse = async (data, token) => {
-  const client = new faunadb.Client({
-    secret: token,
-  });
-  const course = await client.query(
-    q.Create(q.Collection("Courses"), { data })
-  );
-  return course;
-};
-
-export const fetchUserAdditionDependencies = async (role, token) => {
-  const client = new faunadb.Client({
-    secret: token,
-  });
-  const details = await client.query(
-    q.Let(
-      {
-        classes: q.If(
-          q.Equals(role, "student"),
-          q.Call(q.Function("class_ids_and_names")),
-          []
-        ),
-        courses: q.If(
-          q.Equals(role, "teacher"),
-          q.Call(
-            q.Function("course_ids_and_titles"),
-            q.Paginate(q.Documents(q.Collection("Courses")))
-          ),
-          []
-        ),
-      },
-      {
-        classes: q.Select(["data"], q.Var("classes")),
-        courses: q.Var("courses"),
-      }
-    )
-  );
-  return details;
-};
-
-export const addUser = async (user, role, token) => {
-  const client = new faunadb.Client({
-    secret: token,
-  });
+export const addUser = async (user, role, secret) => {
+  const client = new faunadb.Client({ secret });
   const collection = `${capitalize(role)}s`;
   return await client.query(
-    q.Create(q.Collection(collection), { data: { ...user, role, courses: [] } })
+    q.Create(q.Collection(collection), { data: { ...user, courses: [] } })
   );
 };
 
-export const studentTeacherCourseCount = async (token) => {
-  const client = new faunadb.Client({
-    secret: token,
-  });
+export const studentTeacherCourseCount = async (secret) => {
+  const client = new faunadb.Client({ secret });
   const count = await client.query(
     q.Let(
       {
@@ -298,75 +214,60 @@ export const studentTeacherCourseCount = async (token) => {
   return count;
 };
 
-export const deleteUser = async (user_id, email, collection, token) => {
-  const client = new faunadb.Client({
-    secret: token,
-  });
+export const deleteCourse = async (course_id, secret) => {
+  const client = new faunadb.Client({ secret });
+  const response = await client.query(
+    q.Call(q.Function("cascade_delete_course"), course_id)
+  );
+  return response;
+};
+
+export const assignCourse = async (course_id, teacher_id, secret) => {
+  const client = new faunadb.Client({ secret });
   const response = await client.query(
     q.Let(
       {
-        deletionOfUserInCollection: q.Delete(
-          q.Ref(q.Collection(collection), user_id)
-        ),
-        user_in_users_collection: q.Match(q.Index("users_by_email"), email),
-        deletionOfUserInUsers: q.Delete(q.Var("user_in_users_collection")),
+        courseRef: q.Ref(q.Collection("Courses"), course_id),
+        teacherRef: q.Ref(q.Collection("Teachers"), teacher_id),
+        teacher: q.Get(q.Var("teacherRef")),
+        courses: q.Select(["data", "courses"], q.Var("teacher"), []),
+        teachers: q.Select(["data", "teachers"], q.Get(q.Var("courseRef")), []),
+        alreadyAssigned: q.ContainsValue(q.Var("courseRef"), q.Var("courses")),
+        updatedCourseArray: q.Append(q.Var("courses"), [q.Var("courseRef")]),
+        updatedTeachersArray: q.Append(q.Var("teachers"), [
+          q.Select(["ref"], q.Var("teacher")),
+        ]),
       },
-      {
-        result: "successfully deleted user",
-      }
+      q.If(
+        q.Not(q.Var("alreadyAssigned")),
+        q.Let(
+          q.Do([
+            q.Update(q.Var("teacherRef"), {
+              data: { courses: q.Var("updatedCourseArray") },
+            }),
+            q.Update(q.Var("courseRef"), {
+              data: { teachers: q.Var("updatedTeachersArray") },
+            }),
+          ]),
+          q.Get(q.Var("courseRef"))
+        ),
+        q.Abort("course already exists")
+      )
     )
   );
   return response;
 };
 
-export const deleteCourse = async (course_id, token) => {
-  const client = new faunadb.Client({
-    secret: token,
-  });
-  const response = await client.query(
-    q.Call(
-      q.Function("cascade_delete_course"),
-      q.Ref(q.Collection("courses"), course_id)
-    )
-  );
-  return response;
-};
-
-export const assignCourse = async (course_id, teacher_id, token) => {
-  const client = new faunadb.Client({
-    secret: token,
-  });
-  const response = await client.query(
-    q.Call(q.Function("assign_course"), [course_id, teacher_id])
-  );
-  return {
-    id: response.result.finalResult.ref.id,
-    title: response.result.finalResult.data.title,
-  };
-};
-
-export const selectCourseComponentData = async (token) => {
-  const client = new faunadb.Client({
-    secret: token,
-  });
+export const selectCourseComponentData = async (secret) => {
+  const client = new faunadb.Client({ secret });
   const courses = await client.query(
-    q.Call(
-      q.Function("course_ids_and_titles"),
-      q.Paginate(q.Documents(q.Collection("Courses")))
+    q.Map(
+      q.Paginate(q.Documents(q.Collection("Courses"))),
+      q.Lambda("ref", {
+        id: q.Select(["id"], q.Var("ref")),
+        title: q.Select(["data", "title"], q.Get(q.Var("ref"))),
+      })
     )
   );
   return courses.data;
 };
-
-/*
-Create(Collection('Students'), {
-  data: {
-    firstName: "student2",
-    lastName: "Db",
-    email: "student2@skulment.edu",
-    role: "student",
-    courses: [],
-    currentClass: ""
-  }
-})
-*/

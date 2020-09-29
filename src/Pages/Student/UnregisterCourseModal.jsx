@@ -10,11 +10,11 @@ const UnregisterCourseModal = ({ isOpen, onClose, course_id }) => {
   const history = useHistory();
   const { user } = useAuth0();
   const [loading, setLoading] = React.useState(false);
-  const { user_id, token } = user["https://fauna.com/user_metadata"];
+  const { user_id, secret } = user["https://fauna.com/user_metadata"];
 
   const handleUnregisteration = () => {
     setLoading(true);
-    unregisterCourse(course_id, user_id, token)
+    unregisterCourse(course_id, user_id, secret)
       .then(() => {
         setLoading(false);
         toast.success("course unregistered successfully");
@@ -33,15 +33,13 @@ const UnregisterCourseModal = ({ isOpen, onClose, course_id }) => {
           isLoading={loading}
           loadingText="Unregistering..."
           onClick={handleUnregisteration}
-          variantColor="brand.red.800"
-          bg="brand.red.800"
+          variantColor="red"
         >
           Unregister
         </Button>
         <Button
           onClick={onClose}
-          variantColor="brand.blue.800"
-          bg="brand.blue.800"
+          variantColor="blue"
         >
           Cancel
         </Button>

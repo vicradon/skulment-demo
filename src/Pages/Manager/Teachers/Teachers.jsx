@@ -1,5 +1,5 @@
 import { useAuth0 } from "@auth0/auth0-react";
-import { Button, Flex, Heading, Box, useDisclosure } from "@chakra-ui/core";
+import { Button, Flex, Heading } from "@chakra-ui/core";
 import React from "react";
 import Loader from "../../../Components/Loader";
 import { toast } from "react-toastify";
@@ -9,13 +9,12 @@ import { getTeachers } from "../functions";
 import { Link } from "react-router-dom";
 
 const Teachers = () => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [teachers, setTeachers] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
-  const { token } = useAuth0().user["https://fauna.com/user_metadata"];
+  const { secret } = useAuth0().user["https://fauna.com/user_metadata"];
 
   React.useEffect(() => {
-    getTeachers(token)
+    getTeachers(secret)
       .then((teachers) => {
         setTeachers(teachers);
         setLoading(false);
@@ -24,11 +23,8 @@ const Teachers = () => {
         setLoading(false);
         toast.error(error.message);
       });
-  }, [token]);
+  }, [secret]);
 
-  const addToTeachers = (teacher) => {
-    setTeachers([...teachers, teacher]);
-  };
   return (
     <ManagerDashboardLayout>
       <Flex justify="space-between" align="center">
@@ -36,7 +32,7 @@ const Teachers = () => {
           Teachers
         </Heading>
         <Link to={{ pathname: "/add-teacher", state: { role: "teacher" } }}>
-          <Button variantColor="blue" onClick={onOpen}>
+          <Button variantColor="blue">
             Add teacher
           </Button>
         </Link>

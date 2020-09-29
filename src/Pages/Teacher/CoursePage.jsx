@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  Flex,
-  Heading,
-  List,
-  ListItem,
-  Text
-} from "@chakra-ui/core";
+import { Box, Flex, Heading, List, ListItem, Text } from "@chakra-ui/core";
 import React from "react";
 import { toast } from "react-toastify";
 import Loader from "../../Components/Loader";
@@ -17,14 +9,13 @@ import { HiArrowNarrowLeft } from "react-icons/hi";
 import { getCoursePageData } from "../Shared/functions";
 
 const CoursePage = () => {
-
   const course_id = window.location.pathname.split("/").reverse()[0];
-  const token = useAuth0().user["https://fauna.com/user_metadata"].token;
+  const secret = useAuth0().user["https://fauna.com/user_metadata"].secret;
   const [details, setDetails] = React.useState({});
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    getCoursePageData(course_id, token)
+    getCoursePageData(course_id, secret)
       .then((details) => {
         setDetails(details);
         setLoading(false);
@@ -33,7 +24,7 @@ const CoursePage = () => {
         setLoading(false);
         toast.error(error.message);
       });
-  }, []);
+  }, [course_id, secret]);
 
   return (
     <StudentDashboardLayout>
@@ -83,20 +74,17 @@ const CoursePage = () => {
             </Flex>
 
             <List as="ol" styleType="decimal">
-              {(details.teachers &&
+              {details.teachers &&
                 details.teachers.map((teacher) => {
                   return <ListItem key={teacher.id}>{teacher.name}</ListItem>;
-                })) ||
-                "No teachers"}
+                })}
             </List>
+            {details.teachers && details.teachers.length === 0 && "No teachers"}
           </Box>
-
-
         </Box>
       ) : (
         <Loader />
       )}
-
     </StudentDashboardLayout>
   );
 };

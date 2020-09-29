@@ -1,7 +1,7 @@
 import faunadb, { query as q } from "faunadb";
 
-export const selectComponentData = async (user_id, token) => {
-  const client = new faunadb.Client({ secret: token });
+export const selectComponentData = async (user_id, secret) => {
+  const client = new faunadb.Client({ secret });
   const courses = await client.query(
     q.Let(
       {
@@ -10,51 +10,45 @@ export const selectComponentData = async (user_id, token) => {
           ["data", "currentClass"],
           q.Get(q.Var("student_ref"))
         ),
+        courses: q.Select(
+          ["data", "courses"],
+          q.Get(q.Var("current_class")),
+          []
+        ),
       },
       {
-        courses: q.Select(
-          ["data"],
-          q.Call(
-            q.Function("course_ids_and_titles"),
-            q.Paginate(
-              q.Match(q.Index("courses_for_class"), q.Var("current_class"))
-            )
-          )
+        courses: q.Map(
+          q.Var("courses"),
+          q.Lambda("course", {
+            id: q.Select(["id"], q.Var("course")),
+            title: q.Select(["data", "title"], q.Get(q.Var("course"))),
+          })
         ),
       }
     )
   );
-
   return courses;
 };
 
-export const registerCourse = async (course_id, user_id, token) => {
-  console.log(course_id, user_id);
-  const client = new faunadb.Client({ secret: token });
+export const registerCourses = async (courses, secret) => {
+  const client = new faunadb.Client({ secret });
+  const course_ids = courses.map((course) => course.value);
   const response = await client.query(
-    q.Call(q.Function("register_course"), [course_id, user_id])
+    q.Call(q.Function("register_courses"), course_ids)
   );
-  return response.result.finalResult;
+  return response;
 };
 
-export const unregisterCourse = async (course_id, user_id, token) => {
-  const client = new faunadb.Client({ secret: token });
+export const unregisterCourse = async (course_id, user_id, secret) => {
+  const client = new faunadb.Client({ secret });
   const response = await client.query(
     q.Call(q.Function("unregister_course"), [course_id, user_id])
   );
   return response;
 };
 
-export const getCoursePageData = async (course_id, token) => {
-  const client = new faunadb.Client({ secret: token });
-  const details = await client.query(
-    q.Call(q.Function("student_course_page_data"), course_id)
-  );
-  return details;
-};
-
-export const courseCount = async (user_id, token) => {
-  const client = new faunadb.Client({ secret: token });
+export const courseCount = async (user_id, secret) => {
+  const client = new faunadb.Client({ secret });
   const count = await client.query(
     q.Count(
       q.Select(
@@ -67,8 +61,8 @@ export const courseCount = async (user_id, token) => {
   return count;
 };
 
-export const getRegisteredCourses = async (user_id, token) => {
-  const client = new faunadb.Client({ secret: token });
+export const getRegisteredCourses = async (user_id, secret) => {
+  const client = new faunadb.Client({ secret });
   const courses = await client.query(
     q.Map(
       q.Select(

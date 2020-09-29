@@ -24,10 +24,10 @@ const AssignCourseModal = ({ isOpen, onClose, addToCourses, teacher_id }) => {
   const [assigning, setAssigning] = React.useState(false);
   const { user } = useAuth0();
 
-  const { token } = user["https://fauna.com/user_metadata"];
+  const { secret } = user["https://fauna.com/user_metadata"];
 
   React.useEffect(() => {
-    selectCourseComponentData(token)
+    selectCourseComponentData(secret)
       .then((courses) => {
         setCourses(courses);
         setLoading(false);
@@ -36,16 +36,16 @@ const AssignCourseModal = ({ isOpen, onClose, addToCourses, teacher_id }) => {
         setLoading(false);
         toast.error(error.message);
       });
-  }, []);
+  }, [secret]);
 
   const handleSubmit = (event) => {
     setAssigning(true);
     event.preventDefault();
-    assignCourse(selected_course_id, teacher_id, token)
+    assignCourse(selected_course_id, teacher_id, secret)
       .then((course) => {
-        toast.success("assigned courses to teacher");
+        toast.success("assigned course to teacher");
         setAssigning(false);
-        addToCourses(course);
+        addToCourses({ id: course.ref.id, title: course.data.title });
         onClose();
       })
       .catch((error) => {

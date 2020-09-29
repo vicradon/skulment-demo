@@ -12,13 +12,13 @@ import { capitalize } from "../../services/sharedFunctions";
 
 const Home = () => {
   const { user } = useAuth0();
-  const { user_id, token } = user["https://fauna.com/user_metadata"];
+  const { user_id, secret } = user["https://fauna.com/user_metadata"];
 
   const [details, setDetails] = React.useState({});
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    teacherDashboardDetails(user_id, token)
+    teacherDashboardDetails(user_id, secret)
       .then((details) => {
         setDetails(details)
         setLoading(false);
@@ -27,7 +27,7 @@ const Home = () => {
         toast.error(error.message);
         setLoading(false);
       });
-  }, []);
+  }, [user_id, secret]);
 
   return (
     <TeacherDashboardLayout>

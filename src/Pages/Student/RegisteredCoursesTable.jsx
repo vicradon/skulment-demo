@@ -22,6 +22,7 @@ const RegisteredCoursesTable = ({ courses }) => {
             courses.map((course, index) => {
               return (
                 <tr
+                  /* TODO: Add an onClick handler here */
                   onClick={() => history.push(`/courses/${course.ref.id}`)}
                   key={index}
                 >

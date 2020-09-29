@@ -124,12 +124,15 @@ const generateRandomUsers = (userType, limit = 50, dependentObjects) => {
         firstName: firstName,
         lastName: lastName,
         email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@skulment.edu`,
-        role: userType,
       };
       if (userType === "student")
-        return { ...base, currentClass, courses: [course] };
-      if (userType === "teacher") return { ...base, courses: [course] };
-      return base;
+        return {
+          data: { ...base, currentClass, courses: [course] },
+          role: "student",
+        };
+      if (userType === "teacher")
+        return { data: { ...base, courses: [course] }, role: "teacher" };
+      return { data: base, role: "manager" };
     });
 };
 
@@ -143,19 +146,14 @@ const storeUsersOnFauna = async (users) => {
           ["user"],
           q.Let(
             {
+              role: q.Select(["role"], q.Var("user")),
               user: q.Create(
-                q.Collection(
-                  q.Concat(
-                    [q.TitleCase(q.Select(["role"], q.Var("user"))), "s"],
-                    ""
-                  )
-                ),
+                q.Collection(q.Concat([q.TitleCase(q.Var("role")), "s"], "")),
                 {
-                  data: q.Var("user"),
+                  data: q.Select(["data"], q.Var("user")),
                 }
               ),
               user_ref: q.Select(["ref"], q.Var("user")),
-              role: q.Select(["data", "role"], q.Var("user")),
 
               notManager: q.If(
                 q.Not(q.Equals(q.Var("role"), "manager")),
@@ -215,7 +213,7 @@ storeClassesOnFauna(availableClasses())
   .then((classObjects) => {
     console.log("Successfully created classes on faunadb");
 
-    const randomCourses = generateRandomCourses(50, classObjects);
+    const randomCourses = generateRandomCourses(20, classObjects);
 
     storeCoursesOnFauna(randomCourses)
       .then((courseObjects) => {
@@ -234,25 +232,31 @@ storeClassesOnFauna(availableClasses())
             courses: courseObjects,
           }),
           {
-            firstName: "Student",
-            lastName: "Default",
-            role: 'student',
-            email: "student1@skulment.edu",
-            currentClass: classObjects[0].ref,
-            courses: [courseObjects[0].ref],
+            data: {
+              firstName: "Student",
+              lastName: "Default",
+              email: "student1@skulment.edu",
+              currentClass: classObjects[0].ref,
+              courses: [courseObjects[0].ref],
+            },
+            role: "student",
           },
           {
-            firstName: "Teacher",
-            lastName: "Default",
-            role: 'teacher',
-            email: "teacher1@skulment.edu",
-            courses: [courseObjects[0].ref],
+            data: {
+              firstName: "Teacher",
+              lastName: "Default",
+              email: "teacher1@skulment.edu",
+              courses: [courseObjects[0].ref],
+            },
+            role: "teacher",
           },
           {
-            firstName: "Manager",
-            lastName: "Default",
-            role: 'manager',
-            email: "manager1@skulment.edu",
+            data: {
+              firstName: "Manager",
+              lastName: "Default",
+              email: "manager1@skulment.edu",
+            },
+            role: "manager",
           },
         ];
 

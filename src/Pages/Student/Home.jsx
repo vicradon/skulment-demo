@@ -14,10 +14,10 @@ const Home = () => {
   const [courseCount, setCourseCount] = React.useState({});
   const [loading, setLoading] = React.useState(true);
 
-  const { user_id, token } = user["https://fauna.com/user_metadata"];
+  const { user_id, secret } = user["https://fauna.com/user_metadata"];
 
   React.useEffect(() => {
-    courseCounter(user_id, token)
+    courseCounter(user_id, secret)
       .then((count) => {
         setCourseCount(count);
         setLoading(false)
@@ -26,7 +26,7 @@ const Home = () => {
         setLoading(false);
         toast.error(error.message);
       });
-  }, []);
+  }, [secret, user_id]);
 
   return (
     <StudentDashboardLayout>
@@ -36,8 +36,7 @@ const Home = () => {
         </Heading>
         <Text color="typography.gray-1">Welcome Back</Text>
 
-        <Text color="typography.gray-1">Token: {token}</Text>
-        <Text color="typography.gray-1">User id: {user_id}</Text>
+        <Text color="typography.gray-1">Secret: {secret}</Text>
       </Box>
 
       {!loading ? (

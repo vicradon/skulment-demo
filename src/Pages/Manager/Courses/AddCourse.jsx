@@ -17,7 +17,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { Link, useHistory } from "react-router-dom";
 
 const AddCourse = () => {
-  const { token } = useAuth0().user["https://fauna.com/user_metadata"];
+  const { secret } = useAuth0().user["https://fauna.com/user_metadata"];
   const [loading, setLoading] = React.useState(false);
   const history = useHistory();
   const [state, setState] = React.useState({
@@ -35,7 +35,7 @@ const AddCourse = () => {
   React.useEffect(() => {
     setLoading(false);
 
-    fetchCourseAdditionDependencies(token)
+    fetchCourseAdditionDependencies(secret)
       .then((data) => {
         setTeachers(data.teachers);
         setClasses(data.classes);
@@ -45,7 +45,7 @@ const AddCourse = () => {
         setLoading(false);
         toast.error(error.message);
       });
-  }, []);
+  }, [secret]);
 
   const handleChange = ({ target }) => {
     setState({ ...state, [target.name]: target.value });
@@ -53,7 +53,7 @@ const AddCourse = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    addCourse(state, token)
+    addCourse(state, secret)
       .then(() => {
         toast.success("Added a course");
         history.push("/courses");

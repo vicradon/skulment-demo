@@ -23,7 +23,7 @@ const AssignTeacherToCourseModal = ({
   addToTeachers,
   course_id,
 }) => {
-  const {token} = useAuth0().user["https://fauna.com/user_metadata"];
+  const {secret} = useAuth0().user["https://fauna.com/user_metadata"];
   const [state, setState] = React.useState({
     title: "General Mathematics",
     description: "A course on a few principles",
@@ -38,7 +38,7 @@ const AssignTeacherToCourseModal = ({
   };
   const handleAssignment = (event) => {
     event.preventDefault();
-    addCourse(token, state)
+    addCourse(secret, state)
       .then(() => {
         toast.success("Added a course");
         addToTeachers([state.title, state.creditLoad, state.class]);

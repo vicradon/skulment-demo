@@ -1,10 +1,8 @@
 import {
-  ModalFooter,
   Button,
   FormControl,
   FormLabel,
   Input,
-  Select,
   Flex,
   Box,
 } from "@chakra-ui/core";
@@ -12,12 +10,12 @@ import React from "react";
 import ManagerDashboardLayout from "../../../Layouts/ManagerDashboard";
 import { HiArrowNarrowLeft } from "react-icons/hi";
 import { toast } from "react-toastify";
-import { addUser, fetchUserAdditionDependencies } from "../functions";
+import { addUser } from "../functions";
 import { useAuth0 } from "@auth0/auth0-react";
 import { Link, useHistory } from "react-router-dom";
 
 const AddUser = (props) => {
-  const { token } = useAuth0().user["https://fauna.com/user_metadata"];
+  const { secret } = useAuth0().user["https://fauna.com/user_metadata"];
   const role = props.location.state.role;
   const history = useHistory();
   const [user, setUser] = React.useState({
@@ -32,7 +30,7 @@ const AddUser = (props) => {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    addUser(user, role, token)
+    addUser(user, role, secret)
       .then(() => {
         toast.success("Added a user");
         history.push(`/${role}s`);

@@ -8,18 +8,19 @@ import { useHistory } from "react-router-dom";
 
 const DeleteCourseModal = ({ isOpen, onClose, course_id }) => {
   const history = useHistory();
-  const { token } = useAuth0().user["https://fauna.com/user_metadata"];
+  const { secret } = useAuth0().user["https://fauna.com/user_metadata"];
   const [loading, setLoading] = React.useState(false);
 
   const handleDelete = () => {
     setLoading(true);
-    deleteCourse(course_id, token)
+    deleteCourse(course_id, secret)
       .then(() => {
         setLoading(false);
         toast.success("successfully deleted course");
         history.push('/courses');
       })
       .catch((error) => {
+        console.error(error)
         setLoading(false);
         toast.error(error.message);
       });

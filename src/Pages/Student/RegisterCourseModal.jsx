@@ -9,78 +9,82 @@ import {
   Button,
   FormControl,
   FormLabel,
-  Select,
 } from "@chakra-ui/core";
+import Select from "react-select";
+import makeAnimated from "react-select/animated";
 import { toast } from "react-toastify";
-import Loader from "../../Components/Loader";
 import React from "react";
-import { selectComponentData, registerCourse } from "./functions";
+import Loader from "../../Components/Loader";
+import { selectComponentData, registerCourses } from "./functions";
 import { useAuth0 } from "@auth0/auth0-react";
 
-const RegisterCourseModal = ({ isOpen, onClose, addToCourses }) => {
-  const [selected_course_id, setSelectedCourseId] = React.useState({});
+const RegisterCourseModal = ({
+  isOpen,
+  onClose,
+  addToCourses,
+  registeredCourses,
+}) => {
+  const [selected_courses, setSelectedCourses] = React.useState([]);
   const [courses, setCourses] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [registering, setRegistering] = React.useState(false);
   const { user } = useAuth0();
 
-  const { user_id, token } = user["https://fauna.com/user_metadata"];
+  const { user_id, secret } = user["https://fauna.com/user_metadata"];
+
+  const transformCourseOptions = (courses) => {
+    return courses.map((course) => {
+      return {
+        value: course.id,
+        label: course.title,
+      };
+    });
+  };
+
+  const animatedComponents = makeAnimated();
 
   React.useEffect(() => {
-    selectComponentData(user_id, token)
+    selectComponentData(user_id, secret)
       .then((data) => {
-        setCourses(data.courses);
+        const strigifiedRegisteredCourses = registeredCourses.map((course) =>
+          JSON.stringify(course)
+        );
+        const registrableCourses = data.courses.filter((course) => {
+          return !strigifiedRegisteredCourses.includes(JSON.stringify(course));
+        });
+        setCourses(transformCourseOptions(registrableCourses));
         setLoading(false);
       })
       .catch((error) => {
         setLoading(false);
         toast.error(error.message);
       });
-  }, []);
+  }, [user_id, secret, registeredCourses]);
 
   const handleSubmit = (event) => {
     setRegistering(true);
     event.preventDefault();
-    registerCourse(selected_course_id, user_id, token)
-      .then((course) => {
-        toast.success("added a courses");
-        setRegistering(false);
-        addToCourses(course);
-        onClose();
-      })
-      .catch((error) => {
-        setRegistering(false);
-        toast.error(error.message);
-      });
+    /* TODO: Add registerCourses function below */
+
   };
+
+  /* TODO: Add onChange handler here */
+
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Add Course</ModalHeader>
+        <ModalHeader>Register Courses</ModalHeader>
         <ModalCloseButton />
         <form onSubmit={handleSubmit}>
           <ModalBody pb={6}>
             <FormControl mt={4}>
               <FormLabel htmlFor="courses">Course to register</FormLabel>
               {!loading ? (
-                <Select
-                  value={selected_course_id}
-                  onChange={(event) => setSelectedCourseId(event.target.value)}
-                  name="courses"
-                  id="courses"
-                  placeholder="Select course"
-                >
-                  {courses &&
-                    courses.map((course) => {
-                      return (
-                        <option key={course.id} value={course.id}>
-                          {course.title}
-                        </option>
-                      );
-                    })}
-                </Select>
+                // TODO: Remove the placeholder and add react-select
+                <>placeholder</>
+
               ) : (
                 <Loader />
               )}
@@ -91,10 +95,13 @@ const RegisterCourseModal = ({ isOpen, onClose, addToCourses }) => {
             <Button
               isLoading={registering}
               loadingText="Registering"
-              isDisabled={registering}
+              isDisabled={
+                registering ||
+                courses.length === 0 ||
+                selected_courses.length === 0
+              }
               type="submit"
               variantColor="blue"
-              mr={3}
             >
               Register
             </Button>

@@ -13,12 +13,12 @@ import { capitalize } from "../../services/sharedFunctions";
 
 const Home = () => {
   const { user } = useAuth0();
-  const {token} = user["https://fauna.com/user_metadata"];
+  const {secret} = user["https://fauna.com/user_metadata"];
   const [collectionCount, setCollectionCount] = React.useState({});
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    studentTeacherCourseCount(token)
+    studentTeacherCourseCount(secret)
       .then((count) => {
         setCollectionCount(count);
         setLoading(false);
@@ -27,7 +27,7 @@ const Home = () => {
         setLoading(false);
         toast.error(error.message);
       });
-  }, [token]);
+  }, [secret]);
 
   return (
     <ManagerDashboardLayout>

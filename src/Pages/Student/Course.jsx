@@ -16,18 +16,18 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { Link } from "react-router-dom";
 import { HiArrowNarrowLeft } from "react-icons/hi";
 import UnregisterCourseModal from "./UnregisterCourseModal";
-import { getCoursePageData } from "./functions";
+import { getCoursePageData } from "../Shared/functions";
 
 const Course = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const course_id = window.location.pathname.split("/").reverse()[0];
-  const token = useAuth0().user["https://fauna.com/user_metadata"].token;
+  const secret = useAuth0().user["https://fauna.com/user_metadata"].secret;
   const [details, setDetails] = React.useState({});
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    getCoursePageData(course_id, token)
+    getCoursePageData(course_id, secret)
       .then((details) => {
         setDetails(details);
         setLoading(false);
@@ -36,7 +36,7 @@ const Course = () => {
         setLoading(false);
         toast.error(error.message);
       });
-  }, []);
+  }, [course_id, secret]);
 
   return (
     <StudentDashboardLayout>
@@ -59,7 +59,7 @@ const Course = () => {
             <Box mr="1rem">
               <Text>Course Code</Text>
               <Heading fontWeight={400} size="md">
-                {details.courseCode}
+                {details.code}
               </Heading>
             </Box>
           </Flex>
@@ -71,23 +71,29 @@ const Course = () => {
             </Flex>
 
             <List as="ol" styleType="decimal">
-              {(details.teachers &&
+              {details.teachers &&
                 details.teachers.map((teacher) => {
                   return <ListItem key={teacher.id}>{teacher.name}</ListItem>;
-                })) ||
-                "No teachers"}
+                })}
             </List>
+            {details.teachers && details.teachers.length === 0 && "No teachers"}
           </Box>
 
           <Flex justify="flex-end">
-            <Button variantColor="red" onClick={onOpen}>Unregister</Button>
+            <Button variantColor="red" onClick={onOpen}>
+              Unregister
+            </Button>
           </Flex>
         </Box>
       ) : (
         <Loader />
       )}
 
-      <UnregisterCourseModal isOpen={isOpen} onClose={onClose} course_id={course_id} />
+      <UnregisterCourseModal
+        isOpen={isOpen}
+        onClose={onClose}
+        course_id={course_id}
+      />
     </StudentDashboardLayout>
   );
 };

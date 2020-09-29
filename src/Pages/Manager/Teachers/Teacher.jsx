@@ -26,7 +26,7 @@ const Teacher = () => {
   } = useDisclosure();
 
   const teacher_id = window.location.pathname.split("/").reverse()[0];
-  const { token } = useAuth0().user["https://fauna.com/user_metadata"];
+  const { secret } = useAuth0().user["https://fauna.com/user_metadata"];
   const [teacher, setTeacher] = React.useState({});
   const [courses, setCourses] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
@@ -36,7 +36,7 @@ const Teacher = () => {
   };
 
   React.useEffect(() => {
-    getTeacherDetails(teacher_id, token)
+    getTeacherDetails(teacher_id, secret)
       .then((teacher) => {
         setTeacher(teacher);
         setCourses(teacher.courses);
@@ -46,7 +46,7 @@ const Teacher = () => {
         setLoading(false);
         toast.error(error.message);
       });
-  }, []);
+  }, [teacher_id, secret]);
 
   return (
     <ManagerDashboardLayout>
@@ -85,6 +85,7 @@ const Teacher = () => {
                   return <ListItem key={course.id}>{course.title}</ListItem>;
                 })}
             </List>
+            {courses.length && courses.length === 0 && "No courses"}
           </Box>
         </Box>
       ) : (

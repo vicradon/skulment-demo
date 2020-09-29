@@ -1,5 +1,5 @@
 import { useAuth0 } from "@auth0/auth0-react";
-import { Button, Flex, Heading, Box, useDisclosure } from "@chakra-ui/core";
+import { Button, Flex, Heading } from "@chakra-ui/core";
 import React from "react";
 import Loader from "../../../Components/Loader";
 import { toast } from "react-toastify";
@@ -11,10 +11,10 @@ import { Link } from "react-router-dom";
 const Courses = () => {
   const [loading, setLoading] = React.useState(true);
   const [courses, setCourses] = React.useState([]);
-  const { token } = useAuth0().user["https://fauna.com/user_metadata"];
+  const { secret } = useAuth0().user["https://fauna.com/user_metadata"];
 
   React.useEffect(() => {
-    getCourses(token)
+    getCourses(secret)
       .then((courses) => {
         setLoading(false);
         setCourses(courses);
@@ -23,7 +23,7 @@ const Courses = () => {
         setLoading(false);
         toast.error(error.message);
       });
-  }, []);
+  }, [secret]);
 
   return (
     <ManagerDashboardLayout>

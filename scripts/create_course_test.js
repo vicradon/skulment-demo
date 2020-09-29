@@ -1,9 +1,8 @@
-const faunadb = require("faunadb");
-const q = faunadb.query;
+const { Client, query: q } = require("faunadb");
 require("dotenv").config();
 
-const client = new faunadb.Client({
-  secret: process.env.CURRENT_USER_TOKEN,
+const client = new Client({
+  secret: process.env.CURRENT_USER_SECRET,
 });
 
 client

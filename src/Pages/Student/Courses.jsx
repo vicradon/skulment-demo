@@ -14,14 +14,16 @@ const Courses = () => {
   const [loading, setLoading] = React.useState(true);
   const [courses, setCourses] = React.useState([]);
 
-  const { user_id, token } = useAuth0().user["https://fauna.com/user_metadata"];
+  const { user_id, secret } = useAuth0().user[
+    "https://fauna.com/user_metadata"
+  ];
 
-  const addToCourses = (course) => {
-    setCourses([...courses, course]);
+  const addToCourses = (newCourses) => {
+    setCourses([...courses, ...newCourses]);
   };
 
   React.useEffect(() => {
-    getRegisteredCourses(user_id, token)
+    getRegisteredCourses(user_id, secret)
       .then((data) => {
         setCourses(data);
         setLoading(false);
@@ -30,7 +32,7 @@ const Courses = () => {
         setLoading(false);
         toast.error(error.message);
       });
-  }, []);
+  }, [secret, user_id]);
 
   return (
     <StudentDashboardLayout>
@@ -39,23 +41,23 @@ const Courses = () => {
         <Heading size="lg" fontWeight="400">
           Your Courses
         </Heading>
-        <Button
-          variant="solid"
-          color="white"
-          bg="brand.blue.800"
-          variantColor="brand.blue.800"
-          onClick={onOpen}
-        >
+        <Button color="white" variantColor="blue" onClick={onOpen}>
           Register Course
         </Button>
       </Flex>
       {!loading ? <RegisteredCoursesTable courses={courses} /> : <Loader />}
 
-      <RegisterCourseModal
-        addToCourses={addToCourses}
-        isOpen={isOpen}
-        onClose={onClose}
-      />
+      {!loading && (
+        <RegisterCourseModal
+          registeredCourses={courses.map((course) => ({
+            id: course.ref.id,
+            title: course.data.title,
+          }))}
+          addToCourses={addToCourses}
+          isOpen={isOpen}
+          onClose={onClose}
+        />
+      )}
     </StudentDashboardLayout>
   );
 };

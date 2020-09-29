@@ -12,8 +12,7 @@ const Home = () => {
         <Flex m="auto" p="3rem" w="90%" align="center" justify="space-between">
           <img src={logo} alt="logo" />
           <Button
-            variant="solid"
-            variantColor="brand.orange.800"
+            variantColor="orange.800"
             bg="brand.orange.800"
             onClick={loginWithRedirect}
           >
@@ -35,9 +34,8 @@ const Home = () => {
             FaunaDB awesomeness
           </Heading>
           <Button
-            variant="solid"
             my="2rem"
-            variantColor="brand.orange.800"
+            variantColor="orange.800"
             bg="brand.orange.800"
             w="100px"
             onClick={loginWithRedirect}

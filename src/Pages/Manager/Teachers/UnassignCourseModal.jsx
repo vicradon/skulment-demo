@@ -8,12 +8,12 @@ import { useHistory } from "react-router-dom";
 
 const UnassignCourseModal = ({ isOpen, onClose, course_id, teacher_id }) => {
   const history = useHistory();
-  const token = useAuth0().user["https://fauna.com/user_metadata"].token;
+  const secret = useAuth0().user["https://fauna.com/user_metadata"].secret;
   const [loading, setLoading] = React.useState(false);
 
   const handleUnassign = () => {
     setLoading(true);
-    unAssginCourse(course_id, teacher_id, token)
+    unAssginCourse(course_id, teacher_id, secret)
       .then(() => {
         setLoading(false);
         toast.success("teacher unassigned successfully");
@@ -32,15 +32,13 @@ const UnassignCourseModal = ({ isOpen, onClose, course_id, teacher_id }) => {
           isLoading={loading}
           loadingText="Unassigning..."
           onClick={handleUnassign}
-          variantColor="brand.red.800"
-          bg="brand.red.800"
+          variantColor="red.800"
         >
           Unassign
         </Button>
         <Button
           onClick={onClose}
-          variantColor="brand.blue.800"
-          bg="brand.blue.800"
+          variantColor="blue"
         >
           Cancel
         </Button>

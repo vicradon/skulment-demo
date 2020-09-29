@@ -31,13 +31,13 @@
 //   };
 //   const [loading, setLoading] = React.useState(false);
 
-//   const { token } = useAuth0().user["https://fauna.com/user_metadata"];
+//   const { secret } = useAuth0().user["https://fauna.com/user_metadata"];
 
 //   React.useEffect(() => {}, []);
 
 //   const handleSubmit = (event) => {
 //     event.preventDefault();
-//     addTeacher(token, state)
+//     addTeacher(secret, state)
 //       .then((data) => {
 //         toast.success("A new teacher added to your school!");
 //         addToTeachers({

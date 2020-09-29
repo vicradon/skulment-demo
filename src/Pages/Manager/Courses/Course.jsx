@@ -27,12 +27,12 @@ const Course = () => {
     onClose: onDeleteClose,
   } = useDisclosure();
 
-  const { token } = useAuth0().user["https://fauna.com/user_metadata"];
+  const { secret } = useAuth0().user["https://fauna.com/user_metadata"];
   const [course, setCourse] = React.useState({});
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    getCoursePageData(course_id, token)
+    getCoursePageData(course_id, secret)
       .then((course) => {
         setCourse(course);
         setLoading(false);
@@ -41,7 +41,7 @@ const Course = () => {
         toast.error(error.message);
         setLoading(false);
       });
-  }, []);
+  }, [course_id, secret]);
 
   return (
     <ManagerDashboardLayout>
@@ -87,6 +87,7 @@ const Course = () => {
                   return <ListItem key={teacher.id}>{teacher.name}</ListItem>;
                 })}
             </List>
+            {course.teachers && course.teachers.length === 0 && "No teachers"}
           </Box>
           <Box my="3rem">
             <Heading size="md" fontWeight="400">

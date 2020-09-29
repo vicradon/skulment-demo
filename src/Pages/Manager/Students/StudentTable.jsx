@@ -1,10 +1,8 @@
 import { Box } from "@chakra-ui/core";
 import React from "react";
-import { useHistory } from "react-router-dom";
 import { TableStyles } from "../../../Components/Styles";
 
 const CourseTable = ({ students }) => {
-  const history = useHistory();
   return (
     <Box>
       <TableStyles />
