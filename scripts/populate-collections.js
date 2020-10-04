@@ -211,13 +211,10 @@ const storeUsersOnFauna = async (users) => {
 
 storeClassesOnFauna(availableClasses())
   .then((classObjects) => {
-    console.log("Successfully created classes on faunadb");
-
     const randomCourses = generateRandomCourses(20, classObjects);
 
     storeCoursesOnFauna(randomCourses)
       .then((courseObjects) => {
-        console.log("Successfully created courses on faunadb");
         const randomUsers = [
           ...generateRandomUsers("student", 49, {
             classes: classObjects,
@@ -261,7 +258,7 @@ storeClassesOnFauna(availableClasses())
         ];
 
         storeUsersOnFauna(randomUsers)
-          .then(() => console.log("Successfully created users on faunadb"))
+          .then(() => console.log("Successfully created collections on FaunaDb"))
           .catch((error) => console.error(error));
       })
       .catch((error) => console.error(error));

@@ -1,9 +1,8 @@
 async function loginFaunaOnUserLogin(user, context, callback) {
   const { Client, query: q } = require("faunadb@2.11.1"); // from Auth0 registry. See https://auth0.com/docs/rules
-  const SERVER_SECRET = ""; // add your database server secret here
 
   const client = new Client({
-    secret: SERVER_SECRET,
+    secret: configuration.SERVER_SECRET,
   });
 
   try {
@@ -17,7 +16,7 @@ async function loginFaunaOnUserLogin(user, context, callback) {
       throw new Error("No user with this email exists");
     }
 
-    /* create a secret from the user's ref using the Tokens function */
+    /* create a secret from the user's ref in the Tokens collection */
     const credential = await client.query(
       q.Create(q.Tokens(null), { instance: user_from_fauna.ref })
     );
@@ -30,7 +29,7 @@ async function loginFaunaOnUserLogin(user, context, callback) {
     };
 
     /* The custom claim allows us to attach the user_metadata to the returned object */
-    const namespace = "https://fauna.com/"; // could be any url
+    const namespace = "https://fauna.com/"; // fauna because we are using FaunaDB
     context.idToken[namespace + "user_metadata"] = user.user_metadata;
 
     auth0.users
