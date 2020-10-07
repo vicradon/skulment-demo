@@ -30,14 +30,8 @@ export const selectComponentData = async (user_id, secret) => {
   return courses;
 };
 
-export const registerCourses = async (courses, secret) => {
-  const client = new faunadb.Client({ secret });
-  const course_ids = courses.map((course) => course.value);
-  const response = await client.query(
-    q.Call(q.Function("register_courses"), course_ids)
-  );
-  return response;
-};
+/* TODO: Add registerCourses function below */
+
 
 export const unregisterCourse = async (course_id, user_id, secret) => {
   const client = new faunadb.Client({ secret });
